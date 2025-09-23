@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, CheckConstraint
+from sqlalchemy import Column, String, Integer
 
 from .base_entity import Base, BaseEntity
 
@@ -8,8 +8,4 @@ class Company(Base, BaseEntity):
 
     name = Column(String, nullable=False)
     description = Column(String)
-    rating = Column(
-        Integer,
-        CheckConstraint("value BETWEEN 1 AND 5"),
-        nullable=False
-    )
+    rating = Column(Integer, nullable=False)
