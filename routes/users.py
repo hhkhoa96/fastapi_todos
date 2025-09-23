@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from database import get_session
 from schemas.user import User
@@ -18,13 +19,16 @@ def get_users(db: Session = Depends(get_session)):
 
 @router.post("")
 async def create_user(payload: UserCreate, db: Session = Depends(get_session)):
-    try:
-        company = (
-            db.query(Company)
-            .filter(Company.id == payload.company_id)
-            .first()
-        )
+    company = (
+        db.query(Company)
+        .filter(Company.id == payload.company_id)
+        .first()
+    )
 
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+
+    try:
         new_admin = User(
             username=payload.username,
             first_name=payload.first_name,
@@ -38,8 +42,10 @@ async def create_user(payload: UserCreate, db: Session = Depends(get_session)):
         db.add(new_admin)
         db.commit()
         db.refresh(new_admin)
-
-        return new_admin
+    except IntegrityError:  
+        raise HTTPException(status_code=400, detail="Username already exists")
     except Exception as e:
+        print("============== LOG ERROR ==================")
         print(e)
-        return e
+        print("============ END LOG ERROR ================")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
