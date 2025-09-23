@@ -5,7 +5,7 @@ from database import get_session
 from schemas.user import User
 from schemas.company import Company
 from models.user import ViewUser, UserCreate
-from services.auth import hasd_password
+from services.auth import hash_password
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -29,7 +29,7 @@ async def create_user(payload: UserCreate, db: Session = Depends(get_session)):
             username=payload.username,
             first_name=payload.first_name,
             last_name=payload.last_name,
-            password=hasd_password(payload.password),
+            password=hash_password(payload.password),
             is_admin=payload.is_admin,
             is_active=True,
             is_superuser=False,
