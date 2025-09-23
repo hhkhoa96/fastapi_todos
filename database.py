@@ -20,7 +20,6 @@ def get_connection_str():
 
 engine = create_engine(get_connection_str(), echo=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False)
-print("### connection str", get_connection_str())
 
 
 def get_session():
