@@ -23,11 +23,15 @@ def get_users(current_user: Annotated[User, Depends(get_current_user)], db: Sess
 
 
 
-@router.post("")
-async def create_user(payload: UserCreate, db: Session = Depends(get_session)):
+# Can't create superuser account
+@router.post("", response_model=ViewUser)
+async def create_user(payload: UserCreate, current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_session)):
+    if not current_user['is_admin']:
+        return HTTPException(status_code=401, detail="Permission denied")
+
     company = (
         db.query(Company)
-        .filter(Company.id == payload.company_id)
+        .filter(Company.id == current_user['company_id'])
         .first()
     )
 
@@ -48,7 +52,8 @@ async def create_user(payload: UserCreate, db: Session = Depends(get_session)):
         db.add(new_admin)
         db.commit()
         db.refresh(new_admin)
-    except IntegrityError:  
+        return new_admin
+    except IntegrityError:
         raise HTTPException(status_code=400, detail="Username already exists")
     except Exception as e:
         logger(e)

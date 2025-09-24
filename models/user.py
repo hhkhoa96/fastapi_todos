@@ -17,4 +17,3 @@ class UserCreate(BaseModel):
     last_name: str
     password: str
     is_admin: bool = False
-    company_id: UUID4 | None = None
