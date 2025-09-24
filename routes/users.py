@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from typing import Annotated
@@ -20,7 +20,6 @@ def get_users(current_user: Annotated[User, Depends(get_current_user)], db: Sess
         return db.query(User).filter(User.company_id == current_user["company_id"])
     else:
         return HTTPException(status_code=401)
-
 
 
 # Can't create superuser account
@@ -58,3 +57,13 @@ async def create_user(payload: UserCreate, current_user: Annotated[User, Depends
     except Exception as e:
         logger(e)
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.get("/{username}/tasks")
+def get_user_tasks_by_id(username: str, current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_session)):
+    user = db.query(User).filter(User.username == username).first()
+    
+    if not current_user["is_admin"] or user.company_id is not current_user.company_id:
+        raise HTTPException(401, "Permission denied")
+
+    return user.tasks if user.tasks else []

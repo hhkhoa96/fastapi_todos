@@ -16,4 +16,4 @@ class User(Base, BaseEntity):
     is_superuser = Column(Boolean, default=False, nullable=False)
 
     company_id = Column(UUID(), ForeignKey("companies.id"))
-    # tasks = relationship("User")
+    tasks = relationship("Task")
