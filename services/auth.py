@@ -1,8 +1,8 @@
-from typing import Optional
+from typing import Annotated
+from fastapi import Depends
 from passlib.context import CryptContext
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from datetime import timedelta, datetime
 from jose import jwt
 
 from schemas.user import User
@@ -10,7 +10,7 @@ from settings import jwt_secret, jwt_algorithm
 
 pw_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 def hash_password(password: str) -> str:
     return pw_context.hash(password)
@@ -35,7 +35,12 @@ def create_access_token(user: User):
         "first_name": user.first_name,
         "last_name": user.last_name,
         "is_admin": user.is_admin,
+        "is_superuser": user.is_superuser,
         "company_id": str(user.company_id),
         # "exp": datetime.now(timedelta(minutes=5))
     }
     return jwt.encode(claims, jwt_secret, algorithm=jwt_algorithm)
+
+
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    return jwt.decode(token, key=jwt_secret, algorithms=jwt_algorithm)
