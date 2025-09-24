@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Boolean, ForeignKey, UUID
+from sqlalchemy.orm import relationship
 
 from .base_entity import Base, BaseEntity
 
@@ -15,3 +16,4 @@ class User(Base, BaseEntity):
     is_superuser = Column(Boolean, default=False, nullable=False)
 
     company_id = Column(UUID(), ForeignKey("companies.id"))
+    tasks = relationship("User")
