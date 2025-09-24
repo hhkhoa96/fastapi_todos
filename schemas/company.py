@@ -11,4 +11,4 @@ class Company(Base, BaseEntity):
     description = Column(String)
     rating = Column(Integer, nullable=False)
 
-    users = relationship("User")
+    # users = relationship("User")
