@@ -1,7 +1,8 @@
-from sqlalchemy import Column, String, Boolean, ForeignKey, UUID, Integer, Enum
+from sqlalchemy import Column, String, ForeignKey, UUID, Integer, Enum
 import enum
 
 from .base_entity import Base, BaseEntity
+
 
 class Status(enum.Enum):
     TODO = 1

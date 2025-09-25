@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from typing import Annotated
 
@@ -8,7 +8,6 @@ from schemas.task import Task, Status
 from models.task import CreateTaskPayload, ViewTask
 from schemas.user import User
 from services.auth import get_current_user
-from services.logger import logger
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 

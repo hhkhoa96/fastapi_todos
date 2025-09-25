@@ -6,7 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 
 from schemas.base_entity import Base
-import schemas.company, schemas.user, schemas.task
+import schemas.company, schemas.user, schemas.task # noqa
 from database import connection_str
 
 # this is the Alembic Config object, which provides
@@ -17,8 +17,6 @@ config = context.config
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
-
 
 config.set_main_option("sqlalchemy.url", connection_str)
 

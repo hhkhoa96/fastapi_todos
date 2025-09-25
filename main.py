@@ -12,6 +12,7 @@ app.include_router(companies_router)
 app.include_router(auth_router)
 app.include_router(tasks_router)
 
+
 @app.get("/")
 def root():
     return {"message": "Hello, World!"}

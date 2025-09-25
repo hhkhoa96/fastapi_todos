@@ -12,6 +12,7 @@ from services.logger import logger
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
+
 @router.get("", response_model=list[ViewUser])
 def get_users(current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_session)):
     if current_user['is_superuser']:
@@ -19,14 +20,14 @@ def get_users(current_user: Annotated[User, Depends(get_current_user)], db: Sess
     elif current_user['is_admin']:
         return db.query(User).filter(User.company_id == current_user["company_id"])
     else:
-        return HTTPException(status_code=401)
+        return HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
 
 # Can't create superuser account
 @router.post("", response_model=ViewUser)
 async def create_user(payload: UserCreate, current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_session)):
     if not current_user['is_admin']:
-        return HTTPException(status_code=401, detail="Permission denied")
+        return HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
 
     company = (
         db.query(Company)
@@ -35,7 +36,7 @@ async def create_user(payload: UserCreate, current_user: Annotated[User, Depends
     )
 
     if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found")
 
     try:
         new_admin = User(
@@ -53,16 +54,15 @@ async def create_user(payload: UserCreate, current_user: Annotated[User, Depends
         db.refresh(new_admin)
         return new_admin
     except IntegrityError:
-        raise HTTPException(status_code=400, detail="Username already exists")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already exists")
     except Exception as e:
         logger(e)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal Server Error")
 
 
 @router.get("/{username}/tasks")
 def get_user_tasks_by_id(username: str, current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_session)):
     user = db.query(User).filter(User.username == username).first()
-    
     if not current_user["is_admin"] or user.company_id is not current_user.company_id:
         raise HTTPException(401, "Permission denied")
 

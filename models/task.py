@@ -11,6 +11,7 @@ class ViewTask(BaseModel):
     status: Status
     user_id: UUID4
 
+
 class CreateTaskPayload(BaseModel):
     summary: str = Field(min_length=1, max_length=100)
     description: Optional[str] = Field(max_length=256)

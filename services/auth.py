@@ -12,8 +12,10 @@ pw_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
+
 def hash_password(password: str) -> str:
     return pw_context.hash(password)
+
 
 def verfiy_password(plain_password: str, hashed_password: str):
     return pw_context.verify(secret=plain_password, hash=hashed_password)
@@ -24,7 +26,6 @@ def sign_in(username: str, password: str, db: Session):
 
     if not user:
         return None
-    
     return user if verfiy_password(password, user.password) else None
 
 
