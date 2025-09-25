@@ -21,7 +21,7 @@ def verfiy_password(plain_password: str, hashed_password: str):
     return pw_context.verify(secret=plain_password, hash=hashed_password)
 
 
-def sign_in(username: str, password: str, db: Session):
+async def sign_in(username: str, password: str, db: Session):
     user = db.query(User).filter(User.username == username).first()
 
     if not user:

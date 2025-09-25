@@ -12,12 +12,12 @@ router = APIRouter(prefix="/companies", tags=["Companies"])
 
 
 @router.get("", response_model=list[ViewCompany], status_code=status.HTTP_200_OK)
-def get_companies(current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_session)):
+async def get_companies(current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_session)):
     return db.query(Company).all()
 
 
 @router.post("", response_model=ViewCompany, status_code=status.HTTP_201_CREATED)
-def add_company(payload: CreateCompanyPayload, current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_session)):
+async def add_company(payload: CreateCompanyPayload, current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_session)):
     if not current_user['is_superuser']:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 

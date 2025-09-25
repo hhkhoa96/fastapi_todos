@@ -14,7 +14,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get("", response_model=list[ViewUser])
-def get_users(current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_session)):
+async def get_users(current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_session)):
     if current_user['is_superuser']:
         return db.query(User).all()
     elif current_user['is_admin']:
@@ -61,7 +61,7 @@ async def create_user(payload: UserCreate, current_user: Annotated[User, Depends
 
 
 @router.get("/{username}/tasks")
-def get_user_tasks_by_id(username: str, current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_session)):
+async def get_user_tasks_by_id(username: str, current_user: Annotated[User, Depends(get_current_user)], db: Session = Depends(get_session)):
     user = db.query(User).filter(User.username == username).first()
     if not current_user["is_admin"] or user.company_id is not current_user.company_id:
         raise HTTPException(401, "Permission denied")
