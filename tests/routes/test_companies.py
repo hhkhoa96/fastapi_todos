@@ -2,64 +2,21 @@ import pytest
 from unittest.mock import Mock, patch
 from fastapi.testclient import TestClient
 from fastapi import HTTPException, FastAPI
-from sqlalchemy.orm import Session
 from uuid import uuid4
 
 from routes.companies import router
 from models.company import ViewCompany, CreateCompanyPayload
+from tests.conftest import create_test_app_with_overrides
 
 
 class TestGetCompanies:
-
-    @pytest.fixture
-    def mock_db_session(self):
-        return Mock(spec=Session)
-
-    @pytest.fixture
-    def mock_user(self):
-        return {
-            'id': str(uuid4()),
-            'username': 'testuser',
-            'first_name': 'Test',
-            'last_name': 'User',
-            'is_superuser': False
-        }
-
-    @pytest.fixture
-    def sample_companies(self):
-        return [
-            {
-                "id": str(uuid4()),
-                "name": "Company A",
-                "description": "Description A",
-                "rating": 4
-            },
-            {
-                "id": str(uuid4()),
-                "name": "Company B",
-                "description": "Description B",
-                "rating": 5
-            }
-        ]
 
     def test_get_companies_success(self, mock_db_session, mock_user, sample_companies):
         mock_query = Mock()
         mock_query.all.return_value = sample_companies
         mock_db_session.query.return_value = mock_query
 
-        app = FastAPI()
-        app.include_router(router)
-
-        def override_get_current_user():
-            return mock_user
-
-        def override_get_session():
-            return mock_db_session
-
-        from routes.companies import get_current_user, get_session
-        app.dependency_overrides[get_current_user] = override_get_current_user
-        app.dependency_overrides[get_session] = override_get_session
-
+        app = create_test_app_with_overrides(router, mock_db_session, mock_user)
         client = TestClient(app)
         response = client.get("/companies")
 
@@ -74,19 +31,7 @@ class TestGetCompanies:
         mock_query.all.return_value = []
         mock_db_session.query.return_value = mock_query
 
-        app = FastAPI()
-        app.include_router(router)
-
-        def override_get_current_user():
-            return mock_user
-
-        def override_get_session():
-            return mock_db_session
-
-        from routes.companies import get_current_user, get_session
-        app.dependency_overrides[get_current_user] = override_get_current_user
-        app.dependency_overrides[get_session] = override_get_session
-
+        app = create_test_app_with_overrides(router, mock_db_session, mock_user)
         client = TestClient(app)
         response = client.get("/companies")
 
@@ -112,47 +57,6 @@ class TestGetCompanies:
 
 class TestAddCompany:
 
-    @pytest.fixture
-    def mock_db_session(self):
-        return Mock(spec=Session)
-
-    @pytest.fixture
-    def superuser(self):
-        return {
-            'id': str(uuid4()),
-            'username': 'superuser',
-            'first_name': 'Super',
-            'last_name': 'User',
-            'is_superuser': True
-        }
-
-    @pytest.fixture
-    def regular_user(self):
-        return {
-            'id': str(uuid4()),
-            'username': 'regularuser',
-            'first_name': 'Regular',
-            'last_name': 'User',
-            'is_superuser': False
-        }
-
-    @pytest.fixture
-    def valid_company_payload(self):
-        return {
-            "name": "Test Company",
-            "description": "Test Description",
-            "rating": 4
-        }
-
-    @pytest.fixture
-    def created_company(self):
-        return {
-            "id": str(uuid4()),
-            "name": "Test Company",
-            "description": "Test Description",
-            "rating": 4
-        }
-
     @patch('routes.companies.Company')
     def test_add_company_success(self, mock_company_class, mock_db_session, superuser, valid_company_payload):
         mock_company_instance = Mock()
@@ -165,19 +69,7 @@ class TestAddCompany:
         mock_db_session.refresh.return_value = None
         mock_db_session.commit.return_value = None
 
-        app = FastAPI()
-        app.include_router(router)
-
-        def override_get_current_user():
-            return superuser
-
-        def override_get_session():
-            return mock_db_session
-
-        from routes.companies import get_current_user, get_session
-        app.dependency_overrides[get_current_user] = override_get_current_user
-        app.dependency_overrides[get_session] = override_get_session
-
+        app = create_test_app_with_overrides(router, mock_db_session, superuser)
         client = TestClient(app)
         response = client.post("/companies", json=valid_company_payload)
 
@@ -192,19 +84,7 @@ class TestAddCompany:
         mock_db_session.refresh.assert_called_once()
 
     def test_add_company_forbidden_regular_user(self, mock_db_session, regular_user, valid_company_payload):
-        app = FastAPI()
-        app.include_router(router)
-
-        def override_get_current_user():
-            return regular_user
-
-        def override_get_session():
-            return mock_db_session
-
-        from routes.companies import get_current_user, get_session
-        app.dependency_overrides[get_current_user] = override_get_current_user
-        app.dependency_overrides[get_session] = override_get_session
-
+        app = create_test_app_with_overrides(router, mock_db_session, regular_user)
         client = TestClient(app)
         response = client.post("/companies", json=valid_company_payload)
 
@@ -215,19 +95,7 @@ class TestAddCompany:
         mock_db_session.commit.assert_not_called()
 
     def test_add_company_invalid_payload(self, mock_db_session, superuser):
-        app = FastAPI()
-        app.include_router(router)
-
-        def override_get_current_user():
-            return superuser
-
-        def override_get_session():
-            return mock_db_session
-
-        from routes.companies import get_current_user, get_session
-        app.dependency_overrides[get_current_user] = override_get_current_user
-        app.dependency_overrides[get_session] = override_get_session
-
+        app = create_test_app_with_overrides(router, mock_db_session, superuser)
         client = TestClient(app)
 
         invalid_payload = {
@@ -262,23 +130,11 @@ class TestAddCompany:
         mock_company_class.return_value = mock_company_instance
         mock_db_session.add.side_effect = Exception("Database error")
 
-        app = FastAPI()
-        app.include_router(router)
-
-        def override_get_current_user():
-            return superuser
-
-        def override_get_session():
-            return mock_db_session
-
-        from routes.companies import get_current_user, get_session
-        app.dependency_overrides[get_current_user] = override_get_current_user
-        app.dependency_overrides[get_session] = override_get_session
-
+        app = create_test_app_with_overrides(router, mock_db_session, superuser)
         client = TestClient(app)
 
         with pytest.raises(Exception, match="Database error"):
-            response = client.post("/companies", json=valid_company_payload)
+            client.post("/companies", json=valid_company_payload)
 
     def test_create_company_payload_validation(self):
         valid_payload = CreateCompanyPayload(
