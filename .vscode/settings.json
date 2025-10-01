@@ -1,0 +1,20 @@
+{
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/*.pyo": true,
+        "**/*.pyd": true,
+        ".pytest_cache": true,
+        ".coverage": true,
+        ".venv": true
+    },
+    "search.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/*.pyo": true,
+        "**/*.pyd": true,
+        ".pytest_cache": true,
+        ".coverage": true,
+        ".venv": true
+    }
+}
